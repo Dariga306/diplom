@@ -1,81 +1,115 @@
-# MoodWave — Flutter App
+# MoodWave
 
-Полный фронтенд проект на Flutter, конвертированный из HTML дизайна.
+Mood-based music discovery app — recommends tracks based on your mood, weather, and taste. Includes friends, matching, real-time listening rooms, and chat.
 
-## Структура проекта
+---
+
+## Project Structure
 
 ```
-lib/
-├── main.dart                        # Entry point
-├── theme/
-│   └── app_colors.dart             # Все цвета, градиенты
-├── widgets/
-│   ├── common_widgets.dart         # Общие виджеты
-│   └── bottom_nav_bar.dart         # Нижняя навигация
-└── screens/
-    ├── splash_screen.dart          # Screen 01 — Сплэш
-    ├── onboarding_screen.dart      # Screen 02-04 — Онбординг (3 страницы)
-    ├── login_screen.dart           # Screen 05 — Логин
-    ├── player_screen.dart          # Screen 07 — Плеер
-    ├── chat_screen.dart            # Screen 10 — Чат
-    ├── playlist_screen.dart        # Screen 13 — Плейлист
-    ├── weather_screen.dart         # Screen 14 — Погода
-    └── main/
-        ├── main_screen.dart        # Главный экран с нижним меню
-        ├── home_tab.dart           # Screen 06 — Главная
-        ├── search_tab.dart         # Screen 08 — Поиск
-        ├── match_tab.dart          # Screen 09 — Match
-        ├── friends_tab.dart        # Screen 12 — Друзья
-        └── profile_tab.dart        # Screen 11 — Профиль
+diplom/
+├── moodwave-backend/        # Python FastAPI backend
+│   ├── app/
+│   │   ├── routers/         # API endpoints (auth, music, playlists, chat, match, rooms…)
+│   │   ├── models/          # Database models (SQLAlchemy)
+│   │   ├── schemas/         # Request / response schemas (Pydantic)
+│   │   ├── services/        # Business logic (Spotify, weather, matching, Firebase…)
+│   │   └── main.py
+│   ├── alembic/             # DB migrations
+│   ├── Dockerfile
+│   ├── docker-compose.yml
+│   └── requirements.txt
+│
+└── diplom-frontend/         # Flutter mobile app (Android / iOS)
+    └── lib/
+        ├── screens/         # All app screens (login, home, player, chat, profile…)
+        ├── services/        # API client (Dio)
+        ├── providers/       # Auth state (Provider)
+        └── widgets/
 ```
 
-## Установка и запуск
+---
 
-### 1. Установить зависимости
+## Stack
+
+| | |
+|---|---|
+| Mobile | Flutter 3 / Dart |
+| Backend | Python 3.12 + FastAPI |
+| Database | PostgreSQL 16 |
+| Cache | Redis 7 |
+| Auth | JWT |
+| Realtime | WebSocket |
+| Music | Spotify API |
+| Weather | OpenWeatherMap |
+| Infra | Docker Compose |
+
+---
+
+## Requirements
+
+- [Docker Desktop](https://www.docker.com/products/docker-desktop/)
+- [Flutter SDK ≥ 3.0](https://docs.flutter.dev/get-started/install)
+- Android emulator or physical device
+
+---
+
+## Running the Backend
+
+#### 1. Get `.env` and `firebase-credentials.json`
+
+You need two files inside `moodwave-backend/` — ask the project owner to send them.
+
+#### 2. Start all services
+
 ```bash
+cd moodwave-backend
+docker compose up -d
+```
+
+Starts PostgreSQL (port 5434), Redis (6379), and the API (8000).
+
+#### 3. Apply migrations
+
+```bash
+docker compose exec api alembic upgrade head
+```
+
+#### 4. Check it works
+
+Open [http://localhost:8000/docs](http://localhost:8000/docs) — you should see the Swagger UI.
+
+---
+
+## Running the Frontend
+
+#### 1. Install dependencies
+
+```bash
+cd diplom-frontend
 flutter pub get
 ```
 
-### 2. Запустить приложение
+#### 2. Run
+
 ```bash
 flutter run
 ```
 
-### 3. Сборка APK
+> The app connects to `http://10.0.2.2:8000` by default (Android emulator localhost).
+> Change the base URL in `lib/services/api_service.dart` if needed.
+
+---
+
+## Useful Commands
+
 ```bash
-flutter build apk --release
+# Backend logs
+docker compose logs -f api
+
+# Stop backend
+docker compose down
+
+# Rebuild after changing requirements.txt
+docker compose up -d --build
 ```
-
-## Зависимости
-
-- **flutter** — SDK
-- **google_fonts** ^6.1.0 — Шрифт Outfit
-
-## Навигация
-
-Поток:
-```
-SplashScreen
-  → OnboardingScreen (3 страницы с PageView)
-    → LoginScreen
-      → MainScreen (IndexedStack + BottomNavBar)
-          ├── HomeTab (+ переход на PlayerScreen)
-          ├── SearchTab
-          ├── MatchTab (+ переход на ChatScreen)
-          ├── FriendsTab
-          └── ProfileTab
-
-Дополнительные экраны:
-  → PlayerScreen (из HomeTab / WeatherScreen)
-  → ChatScreen (из MatchTab)
-  → PlaylistScreen (отдельный экран)
-  → WeatherScreen (отдельный экран)
-```
-
-## Дизайн
-
-- 🎨 **Dark theme** — фон #08080f
-- ✨ **Glassmorphism** — BackdropFilter + прозрачные бордеры
-- 🌈 **Neon gradients** — фиолетовый, розовый, синий
-- 📱 **Шрифт** — Outfit (Google Fonts)
-- 💫 **Анимации** — floating cover, music bars, pulse orbs
